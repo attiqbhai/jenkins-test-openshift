@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+    tools {
+        jdk 'openjdk-8'
+        maven '3.8.7'
+    }
+    environment {
+        BUILD_VERSION = "v${currentBuild.number}.RELEASE"
+    }
+    stages {
+        stage('Pull from Nexus') {
+            steps {
+                echo 'deploy to development'
+                configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
+                    sh """mvn -s $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:3.5.0:copy -Dartifact=com.test.openshift:jenkins-test-openshift:1.0.5-20230308.202123-1:jar:mule-application -DoutputDirectory=./"""
+                    sh """mvn -s $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:3.5.0:copy -Dartifact=com.test.openshift:jenkins-test-openshift:1.0.5-20230308.202123-1:pom -DoutputDirectory=./"""
+                    sh """cat jenkins-test-openshift-1.0.5-20230308.202123-1.pom > pom.xml"""
+                }
+            }
+            post {
+                success {
+                    echo "...Jar pulled successfully"
+                } 
+                unsuccessful {
+                    echo "...Jar pull failed"
+                }
+            }
+        }
+        stage('Deploy to Dev') {
+            steps {
+                echo 'deploy to development'
+                configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
+                    sh 'mvn -X -U --batch-mode -s $MAVEN_SETTINGS -Dmule.version=4.4.0 -Danypoint.applicationName=jenkins-test-openshift -Dartifact=jenkins-test-openshift-1.0.5-20230308.202123-1-mule-application.jar -Dapp.public.url=http://jenkins-test-openshift.apps.aws-rtf.4yio.p1.openshiftapps.com -Danypoint.mule.environment=dev -Dbusiness.group.id=c9a6c4cf-9a12-449b-90c1-bf33959d3220 -Danypoint.connectedAppClientId=e262041f68144b1fa9bbbd0a383156dd -Danypoint.connectedAppClientSecret=94629f6F95bC41358d8B6c87241E503E -Danypoint.mule.environment=dev mule:deploy'
+                }
+            }
+            post {
+                success {
+                    echo "...Application deployed successfully"
+                } 
+                unsuccessful {
+                    echo "...Application deployment failed"
+                }
+            }
+        }
+    }
+}
