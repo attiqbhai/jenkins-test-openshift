@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>c9a6c4cf-9a12-449b-90c1-bf33959d3220</groupId>
+	<groupId>com.test.openshift</groupId>
 	<artifactId>jenkins-test-openshift</artifactId>
 	<version>1.0.5-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
