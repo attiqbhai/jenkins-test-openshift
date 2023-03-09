@@ -6,7 +6,7 @@
 
 	<groupId>com.test.openshift</groupId>
 	<artifactId>jenkins-test-openshift</artifactId>
-	<version>1.0.6-SNAPSHOT</version>
+	<version>1.0.7-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 
 	<name>jenkins-test-openshift</name>
