@@ -12,9 +12,9 @@ pipeline {
             steps {
                 echo 'deploy to development'
                 configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
-                    sh """mvn -s $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:3.5.0:copy -Dartifact=com.test.openshift:jenkins-test-openshift:1.0.0-20230302.155633-16:jar:mule-application -DoutputDirectory=./"""
-                    sh """mvn -s $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:3.5.0:copy -Dartifact=com.test.openshift:jenkins-test-openshift:1.0.0-20230302.155633-16:pom -DoutputDirectory=./"""
-                    sh """cat jenkins-test-openshift-1.0.0-20230302.155633-16.pom > pom.xml"""
+                    sh """mvn -s $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:3.5.0:copy -Dartifact=com.test.openshift:jenkins-test-openshift:1.0.7-20230309.032817-1:jar:mule-application -DoutputDirectory=./"""
+                    sh """mvn -s $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:3.5.0:copy -Dartifact=com.test.openshift:jenkins-test-openshift:1.0.7-20230309.032817-1:pom -DoutputDirectory=./"""
+                    sh """cat jenkins-test-openshift-1.0.7-20230309.032817-1.pom > pom.xml"""
                 }
             }
             post {
@@ -26,12 +26,26 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Dev') {
+        stage('Deploy to Exchange - JAR') {
             steps {
-                echo 'deploy to development'
-                configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
-                    sh 'mvn -X -U --batch-mode -s $MAVEN_SETTINGS -Dmule.version=4.4.0 -Danypoint.applicationName=jenkins-test-openshift -Dartifact=jenkins-test-openshift-1.0.0-20230302.155633-16-mule-application.jar -Dapp.public.url=http://jenkins-test-openshift.apps.aws-rtf.4yio.p1.openshiftapps.com -Danypoint.mule.environment=dev -Dbusiness.group.id=*********************** -Danypoint.connectedAppClientId=*********************** -Danypoint.connectedAppClientSecret=*********************** -Danypoint.mule.environment=dev mule:deploy'
+                echo 'deploy to development - dummy'
+                
+                sh 'curl -vi --location --request PUT "https://maven.anypoint.mulesoft.com/api/v1/organizations/c9a6c4cf-9a12-449b-90c1-bf33959d3220/maven/c9a6c4cf-9a12-449b-90c1-bf33959d3220/jenkins-test-openshift/1.0.7-SNAPSHOT/jenkins-test-openshift-1.0.7-20230309.032817-1-mule-application.jar" --header "Authorization: Bearer 9597dd97-887d-4529-af6a-c7b78c3e7ff6" --header "Content-Type: application/java-archive" --data "@./jenkins-test-openshift-1.0.7-20230309.032817-1-mule-application.jar"'
+            }
+            post {
+                success {
+                    echo "...Application deployed successfully"
+                } 
+                unsuccessful {
+                    echo "...Application deployment failed"
                 }
+            }
+        }
+        stage('Deploy to Exchange - POM') {
+            steps {
+                echo 'deploy to exchange - POM'
+                
+                sh 'curl --location --request PUT "https://maven.anypoint.mulesoft.com/api/v1/organizations/c9a6c4cf-9a12-449b-90c1-bf33959d3220/maven/c9a6c4cf-9a12-449b-90c1-bf33959d3220/jenkins-test-openshift/1.0.7-SNAPSHOT/jenkins-test-openshift-1.0.7-20230309.032817-1.pom" --header "Authorization: Bearer 9597dd97-887d-4529-af6a-c7b78c3e7ff6" --header "Content-Type: application/xml" --data "@./pom.xml"'
             }
             post {
                 success {
